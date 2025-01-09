@@ -1,31 +1,36 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import L from 'leaflet';
+import dynamic from 'next/dynamic'; // Dynamically load Leaflet
 import Papa from 'papaparse';
 import 'leaflet/dist/leaflet.css';
 
 // Fix broken markers by setting custom icon URLs
-delete L.Icon.Default.prototype._getIconUrl;
+const L = dynamic(() => import('leaflet'), { ssr: false });
 
-L.Icon.Default.mergeOptions({
-  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-});
+if (L) {
+  delete L.Icon.Default.prototype._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+  });
+}
 
-export default function Home() {
+export default function Page() {
   const [map, setMap] = useState(null);
-  const [coordinatesList, setCoordinatesList] = useState([]); // To store postal codes and coordinates
+  const [coordinatesList, setCoordinatesList] = useState([]);
 
   useEffect(() => {
-    const leafletMap = L.map('map').setView([38.726684, -9.157748], 7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(leafletMap);
+    if (!map && typeof window !== 'undefined') {
+      const leafletMap = L.map('map').setView([38.726684, -9.157748], 7);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+      }).addTo(leafletMap);
 
-    setMap(leafletMap); // Store map instance
-  }, []);
+      setMap(leafletMap);
+    }
+  }, [map]);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -36,7 +41,7 @@ export default function Home() {
         complete: async (results) => {
           const postalCodes = results.data.map((row) => row['PostalCode']);
           const coordinates = await getCoordinates(postalCodes);
-          setCoordinatesList(coordinates); // Store for CSV download
+          setCoordinatesList(coordinates);
           plotMarkers(coordinates);
         },
       });
@@ -46,13 +51,13 @@ export default function Home() {
   const getCoordinates = async (postalCodes) => {
     const baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
     const coordinates = [];
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY; // Fetch API key from env variable
-  
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
+
     for (const code of postalCodes) {
       try {
         const response = await fetch(`${baseUrl}?address=${code},Portugal&key=${apiKey}`);
         const data = await response.json();
-  
+
         if (data.results.length > 0) {
           const { lat, lng } = data.results[0].geometry.location;
           coordinates.push({ code, lat, lng });
@@ -61,10 +66,9 @@ export default function Home() {
         console.error(`Error fetching coordinates for ${code}:`, error);
       }
     }
-  
+
     return coordinates;
   };
-  
 
   const plotMarkers = (coordinates) => {
     if (!map) return;
@@ -80,8 +84,8 @@ export default function Home() {
 
   const downloadCSV = () => {
     const csvData = [
-      ['PostalCode', 'Coordinates'], // CSV Header
-      ...coordinatesList.map(({ code, lat, lng }) => [code, `${lat}, ${lng}`]), // Data rows
+      ['PostalCode', 'Coordinates'],
+      ...coordinatesList.map(({ code, lat, lng }) => [code, `${lat}, ${lng}`]),
     ];
 
     const csvContent = Papa.unparse(csvData);
