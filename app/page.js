@@ -5,32 +5,11 @@ import dynamic from 'next/dynamic'; // Dynamically load Leaflet
 import Papa from 'papaparse';
 import 'leaflet/dist/leaflet.css';
 
-// Fix broken markers by setting custom icon URLs
-const L = dynamic(() => import('leaflet'), { ssr: false });
-
-if (L) {
-  delete L.Icon.Default.prototype._getIconUrl;
-  L.Icon.Default.mergeOptions({
-    iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-    iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-  });
-}
+// Dynamically import Leaflet to ensure it's only used in the client
+const LeafletMap = dynamic(() => import('../components/LeafletMap'), { ssr: false });
 
 export default function Page() {
-  const [map, setMap] = useState(null);
   const [coordinatesList, setCoordinatesList] = useState([]);
-
-  useEffect(() => {
-    if (!map && typeof window !== 'undefined') {
-      const leafletMap = L.map('map').setView([38.726684, -9.157748], 7);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
-      }).addTo(leafletMap);
-
-      setMap(leafletMap);
-    }
-  }, [map]);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -42,7 +21,6 @@ export default function Page() {
           const postalCodes = results.data.map((row) => row['PostalCode']);
           const coordinates = await getCoordinates(postalCodes);
           setCoordinatesList(coordinates);
-          plotMarkers(coordinates);
         },
       });
     }
@@ -68,18 +46,6 @@ export default function Page() {
     }
 
     return coordinates;
-  };
-
-  const plotMarkers = (coordinates) => {
-    if (!map) return;
-
-    coordinates.forEach(({ code, lat, lng }) => {
-      if (lat && lng) {
-        L.marker([lat, lng])
-          .addTo(map)
-          .bindPopup(`Postal Code: ${code}`);
-      }
-    });
   };
 
   const downloadCSV = () => {
@@ -124,7 +90,7 @@ export default function Page() {
           Download Converted List
         </button>
       </div>
-      <div id="map" className="w-full max-w-4xl h-[500px] border rounded-md shadow-md"></div>
+      <LeafletMap coordinatesList={coordinatesList} />
     </main>
   );
 }
