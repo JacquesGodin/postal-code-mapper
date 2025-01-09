@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Postal Code Mapper
+
+A web application that allows users to upload a CSV file containing postal codes, converts those postal codes into geographic coordinates using the Google Maps Geocoding API, and displays them on an interactive map. Users can also download the converted list as a CSV file with postal codes and their corresponding coordinates.
+
+## Features
+- **Upload a CSV file** with postal codes.
+- **Convert postal codes** to geographic coordinates (latitude, longitude) using the Google Maps Geocoding API.
+- **Visualize coordinates** on an interactive map (powered by Leaflet.js and OpenStreetMap).
+- **Download converted data** as a CSV file for future use.
+
+## Demo
+- [Live Demo](#) *(Add your deployment link here, e.g., Vercel or Netlify)*
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js (v16 or higher)
+- A Google Maps Geocoding API Key
+  - [Get an API Key](https://developers.google.com/maps/gmp-get-started)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Installation
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/<your-username>/<repository-name>.git
+   cd <repository-name>
