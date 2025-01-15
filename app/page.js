@@ -28,7 +28,6 @@ export default function Page() {
 
   const getCoordinates = async (postalCodes) => {
     const baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
-    const coordinates = [];
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
 
     for (const code of postalCodes) {
